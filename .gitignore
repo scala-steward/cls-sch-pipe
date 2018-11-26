@@ -1,0 +1,8 @@
+target/
+.idea/
+# vim
+*.sw?
+lib/ojdbc*
+log/
+# Ignore [ce]tags files
+tags
