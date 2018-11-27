@@ -2,7 +2,7 @@ lazy val core = project.in(file("."))
     .settings(commonSettings, releaseSettings)
     .settings(
       name := "cls-sch-pipe"
-    )
+    ).enablePlugins(JavaAppPackaging, DockerPlugin)
 
 val catsV = "1.4.0"
 val kittensV = "1.2.0"
@@ -47,6 +47,7 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.12.7",
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
   scalacOptions += "-Yrangepos",
+  maintainer := "chris@christopherdavenport.tech",
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
