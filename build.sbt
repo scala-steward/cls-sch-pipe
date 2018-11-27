@@ -130,10 +130,10 @@ lazy val releaseSettings = {
       commitReleaseVersion,
       tagRelease,
       // For non cross-build projects, use releaseStepCommand("publishSigned")
-      releaseStepCommandAndRemaining("+publishSigned"),
+      // releaseStepCommandAndRemaining("+publishSigned"),
       setNextVersion,
+      // releaseStepCommand("sonatypeReleaseAll"),
       commitNextVersion,
-      releaseStepCommand("sonatypeReleaseAll"),
       pushChanges
     ),
     publishTo := {
@@ -164,6 +164,7 @@ lazy val releaseSettings = {
       )
     ),
     homepage := Some(url("https://github.com/ChristopherDavenport/cls-sch-pipe")),
+    licenses += ("AGPL-3.0", url("https://www.gnu.org/licenses/agpl.html")),
     publishMavenStyle := true,
     pomIncludeRepository := { _ =>
       false
