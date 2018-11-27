@@ -32,7 +32,8 @@ object application {
 
   def stream[F[_]: Logger: ConcurrentEffect: Timer: ContextShift](conf: config.AppConf): Stream[F, Unit] = {
     ( 
-      Stream.awakeDelay[F](24.hours) >> application.singleCycle(conf)
+      singleCycle(conf) >>
+      Stream.awakeDelay[F](24.hours) >> singleCycle(conf)
     )
       .repeat
       .handleErrorWith(e => 

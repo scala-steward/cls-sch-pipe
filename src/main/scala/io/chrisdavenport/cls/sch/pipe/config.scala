@@ -96,7 +96,7 @@ object config {
     postgres: PostgresConfig
   )
   object AppConfig {
-    implicit val appConfigSemigroup: Semigroup[AppConfig] = semi.semigroup
+    implicit val appConfigMonoid: Monoid[AppConfig] = semi.monoid
     implicit private def lastDecoder[A: Decoder]: Decoder[Last[A]] = 
       Decoder[Option[A]].map(Last(_))
     import io.circe.generic.auto._
@@ -142,7 +142,7 @@ object config {
     jdbcUrl: Last[String]
   )
   object PostgresConfig {
-    implicit val pgConfigSemigroup : Semigroup[PostgresConfig] = semi.semigroup
+    implicit val pgConfigMonoid : Monoid[PostgresConfig] = semi.monoid
   }
 
   final case class OracleConfig(
@@ -155,7 +155,7 @@ object config {
     jdbcUrl: Last[String]
   )
   object OracleConfig {
-    implicit val ocConfigSemigroup : Semigroup[OracleConfig] = semi.semigroup
+    implicit val ocConfigMonoid : Monoid[OracleConfig] = semi.monoid
   }
 
   // TOOD: Validation to return exactly which values are missing
@@ -273,12 +273,8 @@ object config {
     .flatMap(_.as[AppConfig].liftTo[F])
     .recoverWith{
       case e => // Recover to An Empty Config
-      Logger[F].warn(e)(s"Failed to Load Config File - $path").as(
-          AppConfig(
-            OracleConfig(Last(None), Last(None), Last(None), Last(None), Last(None), Last(None), Last(None)),
-            PostgresConfig(Last(None), Last(None), Last(None), Last(None), Last(None), Last(None), Last(None)),
-          )
-        )
+      Logger[F].warn(e)(s"Failed to Load Config File - $path")
+        .as(Monoid[AppConfig].empty)
     }
 
   def getFromDefaultFile[F[_]: Sync: DualContext: ContextShift: Logger]: F[AppConfig] = 
