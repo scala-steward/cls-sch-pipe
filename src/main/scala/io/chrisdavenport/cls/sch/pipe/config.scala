@@ -259,9 +259,12 @@ object config {
     )
   )
 
-  def getFromFile[F[_]: Sync : DualContext: ContextShift: Logger](path: F[Path]): F[AppConfig] = 
-    Stream.eval(path)
-    .flatMap(
+  def getFromFile[F[_]: Sync : DualContext: ContextShift: Logger](path: Path): F[AppConfig] = 
+    Stream.eval(Sync[F].delay(Files.exists(path)))
+    .ifM(
+      path.pure[Stream[F, ?]], 
+      Stream.eval(Sync[F].raiseError(new Exception("File Does Not Exist") with scala.util.control.NoStackTrace))
+    ).flatMap(
       file.readAll[F](_, DualContext[F].blockingContext, 512)
     ).through(text.utf8Decode)
     .compile
@@ -279,7 +282,7 @@ object config {
     }
 
   def getFromDefaultFile[F[_]: Sync: DualContext: ContextShift: Logger]: F[AppConfig] = 
-    getFromFile[F](Sync[F].delay(FileSystems.getDefault().getPath("/usr", "local", "etc", "cls-sch-pipe.yml")))
+    getFromFile[F](FileSystems.getDefault().getPath("/usr", "local", "etc", "cls-sch-pipe.yml"))
 
   def fromArgs[F[_]: Sync](args: List[String]): F[AppConfig] = {
     Command(
