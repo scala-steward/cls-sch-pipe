@@ -10,10 +10,7 @@ import scala.concurrent.duration._
 object Main extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] = for {
-    implicit0(logger: Logger[IO]) <- Slf4jLogger.create[IO]
-    conf <- config.loadAppConf[IO]
-    _ <- application.migration[IO](conf)
-    out <- application.stream(conf).drain.compile.drain
-  } yield ExitCode.Success
+    out <- application.run[IO](args).use(_.pure[IO])
+  } yield out
 
 }

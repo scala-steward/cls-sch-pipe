@@ -12,9 +12,19 @@ import doobie.util.ExecutionContexts
 import pureconfig._
 import pureconfig.generic.auto._
 import io.chrisdavenport.monoids._
+import io.chrisdavenport.linebacker._
+import io.chrisdavenport.system.effect.Console._
 import io.chrisdavenport.system.effect.Environment._
+import io.circe._
+import io.circe.generic.semiauto._
+import io.circe.yaml
 import cats.derived._
 import org.flywaydb.core.Flyway
+import fs2.Stream
+import fs2.io.file
+import fs2.text
+import java.nio.file._
+import com.monovore.decline._
 
 object config {
 
@@ -87,6 +97,39 @@ object config {
   )
   object AppConfig {
     implicit val appConfigSemigroup: Semigroup[AppConfig] = semi.semigroup
+    implicit private def lastDecoder[A: Decoder]: Decoder[Last[A]] = 
+      Decoder[Option[A]].map(Last(_))
+    import io.circe.generic.auto._
+
+    implicit val appConfigDecoder: Decoder[AppConfig] = deriveDecoder[AppConfig]
+
+    val optsAppConfig: Opts[AppConfig] = {
+      val oracleConfig: Opts[OracleConfig] = {
+        val user = Opts.option[String]("oracle-user", help = "The oracle user to use").orNone.map(Last(_))
+        val pass = Opts.option[String]("oracle-password", help = "The oracle password to use").orNone.map(Last(_))
+        val host = Opts.option[String]("oracle-host", help = "The oracle host to connect to").orNone.map(Last(_))
+        val port = Opts.option[Int]("oracle-port", help = "The oracle port to connect to").orNone.map(Last(_))
+        val sid = Opts.option[String]("oracle-sid", help = "The oracle sid to connect to").orNone.map(Last(_))
+        val driver = Opts.option[String]("oracle-driver", help = "The oracle driver to user, only necessary using something custom")
+          .orNone.map(Last(_))
+        val jdbcUrl = Opts.option[String]("oracle-jdbc-url", help = "The oracle jdbc url, only necessary to do something custom")
+          .orNone.map(Last(_))
+        (user,pass,host,port, sid, driver, jdbcUrl).mapN(OracleConfig.apply)
+      }
+      val postgresConfig: Opts[PostgresConfig] = {
+        val user = Opts.option[String]("postgres-user", help = "The postgres user to use").orNone.map(Last(_))
+        val pass = Opts.option[String]("postgres-password", help = "The postgres password to use").orNone.map(Last(_))
+        val host = Opts.option[String]("postgres-host", help = "The postgres host to connect to").orNone.map(Last(_))
+        val port = Opts.option[Int]("postgres-port", help = "The postgres port to connect to").orNone.map(Last(_))
+        val sid = Opts.option[String]("postgres-sid", help = "The postgres sid to connect to").orNone.map(Last(_))
+        val driver = Opts.option[String]("postgres-driver", help = "The postgres driver to user, only necessary using something custom")
+          .orNone.map(Last(_))
+        val jdbcUrl = Opts.option[String]("postgres-jdbc-url", help = "The postgres jdbc url, only necessary to do something custom")
+          .orNone.map(Last(_))
+        (user,pass,host,port, sid, driver, jdbcUrl).mapN(PostgresConfig.apply)
+      }
+      (oracleConfig, postgresConfig).mapN(AppConfig.apply)
+    }
   }
 
   final case class PostgresConfig(
@@ -149,9 +192,13 @@ object config {
     case o => Sync[F].raiseError(new Throwable(s"Missing one or more configuration options - Got $o"))
   }
 
-  def loadAppConf[F[_]: Sync]: F[AppConf] = for {
+  
+
+  def loadAppConf[F[_]: Sync: DualContext : ContextShift: Logger](args: List[String]): F[AppConf] = for {
+    cliConfig <- fromArgs[F](args)
     envAppConfig <- appConfigFromEnv[F]
-    finalConfig = defaultAppConfig.combine(envAppConfig)
+    defaultFile <- getFromDefaultFile[F]
+    finalConfig = defaultAppConfig.combine(envAppConfig).combine(defaultFile).combine(cliConfig)
     out <- appConf[F](finalConfig)
   } yield out
 
@@ -211,5 +258,40 @@ object config {
       Last(pjdbcUrl)
     )
   )
+
+  def getFromFile[F[_]: Sync : DualContext: ContextShift: Logger](path: F[Path]): F[AppConfig] = 
+    Stream.eval(path)
+    .flatMap(
+      file.readAll[F](_, DualContext[F].blockingContext, 512)
+    ).through(text.utf8Decode)
+    .compile
+    .foldMonoid
+    .flatMap(yaml.parser.parse(_).liftTo[F])
+    .flatMap(_.as[AppConfig].liftTo[F])
+    .recoverWith{
+      case e => // Recover to An Empty Config
+      Logger[F].warn(e)(s"Failed to Load Config File - $path").as(
+          AppConfig(
+            OracleConfig(Last(None), Last(None), Last(None), Last(None), Last(None), Last(None), Last(None)),
+            PostgresConfig(Last(None), Last(None), Last(None), Last(None), Last(None), Last(None), Last(None)),
+          )
+        )
+    }
+
+  def getFromDefaultFile[F[_]: Sync: DualContext: ContextShift: Logger]: F[AppConfig] = 
+    getFromFile[F](Sync[F].delay(FileSystems.getDefault().getPath("/usr", "local", "etc", "cls-sch-pipe.yml")))
+
+  def fromArgs[F[_]: Sync](args: List[String]): F[AppConfig] = {
+    Command(
+      name = "cls-sch-pipe",
+      header = "Run Database pipe."
+    ) {AppConfig.optsAppConfig}
+    .parse(args)
+    .fold(
+      h => putStrLn[F](h.toString) >> Sync[F].raiseError[AppConfig](new Throwable("Command Line Options Invalid") with scala.util.control.NoStackTrace),
+      _.pure[F]
+    )
+  }
+
 
 }

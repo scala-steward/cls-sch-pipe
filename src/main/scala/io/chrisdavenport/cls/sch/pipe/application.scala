@@ -5,7 +5,9 @@ import cats.implicits._
 import cats.effect._
 import doobie._
 import doobie.implicits._
+import io.chrisdavenport.linebacker._
 import io.chrisdavenport.log4cats._
+import io.chrisdavenport.log4cats.slf4j._
 import io.chrisdavenport.system.effect.Console._
 import io.chrisdavenport.cls.sch.pipe.oracle._
 import io.chrisdavenport.cls.sch.pipe.postgres._
@@ -13,6 +15,17 @@ import fs2._
 import scala.concurrent.duration._
 
 object application {
+
+  def run[F[_]: ConcurrentEffect: Timer: ContextShift](args: List[String]): Resource[F, ExitCode] = for {
+    implicit0(logger: Logger[F]) <- Resource.liftF(Slf4jLogger.create[F])
+    implicit0(dc: DualContext[F]) <- contexts.Executors.unbound[F]
+      .map(DualContext.fromExecutorService[F](implicitly[ContextShift[F]], _))
+    conf <- Resource.liftF(config.loadAppConf[F](args))
+    _ <- Resource.liftF(migration[F](conf))
+    out <- Resource.liftF(stream(conf).drain.compile.drain)
+  } yield ExitCode.Success
+
+
   def migration[F[_]: Logger: ConcurrentEffect: Timer: ContextShift](conf: config.AppConf): F[Unit] = {
     config.makeMigrations[F](conf.postgres)
   }

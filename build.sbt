@@ -72,6 +72,7 @@ lazy val commonSettings = Seq(
     "io.circe"                    %% "circe-core"                 % circeV,
     "io.circe"                    %% "circe-generic"              % circeV,
     "io.circe"                    %% "circe-parser"               % circeV,
+    "io.circe"                    %% "circe-yaml"                 % "0.9.0",
 
     "com.monovore"                %% "decline"                    % "0.5.1",
 
