@@ -2,7 +2,7 @@ lazy val core = project.in(file("."))
     .settings(commonSettings, releaseSettings)
     .settings(
       name := "cls-sch-pipe"
-    ).enablePlugins(JavaAppPackaging, DockerPlugin)
+    ).enablePlugins(JavaAppPackaging, DockerPlugin, AutomateHeaderPlugin)
 
 val catsV = "1.4.0"
 val kittensV = "1.2.0"
@@ -48,6 +48,9 @@ lazy val commonSettings = Seq(
   crossScalaVersions := Seq(scalaVersion.value, "2.11.12"),
   scalacOptions += "-Yrangepos",
   maintainer := "chris@christopherdavenport.tech",
+  organizationName := "Christopher Davenport",
+  startYear := Some(2018),
+  licenses += ("AGPL-3.0", new URL("https://www.gnu.org/licenses/agpl.html")),
 
   addCompilerPlugin("org.spire-math" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
