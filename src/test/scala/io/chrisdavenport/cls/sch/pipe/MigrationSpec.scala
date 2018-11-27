@@ -38,7 +38,10 @@ class MigrationSpec extends Specification with ForAllTestContainer {
     "makeMigrations works correctly" in {
       val host = container.container.getContainerIpAddress()
       val port = container.container.getMappedPort(5432)
-      val pgConf  = config.PostgresConf(dbUserName, dbPassword, host, port.toString, dbName)
+      val pgConf  = config.PostgresConf(dbUserName, dbPassword, host, port, dbName,
+        "org.postgresql.Driver",
+        s"jdbc:postgresql://${host}:${port}/${dbName}"
+      )
       config.makeMigrations[IO](pgConf)
         .attempt
           .flatMap{

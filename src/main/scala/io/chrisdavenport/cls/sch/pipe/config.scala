@@ -12,6 +12,7 @@ import doobie.util.ExecutionContexts
 import pureconfig._
 import pureconfig.generic.auto._
 import io.chrisdavenport.monoids._
+import io.chrisdavenport.system.effect.Environment._
 import cats.derived._
 import org.flywaydb.core.Flyway
 
@@ -27,22 +28,20 @@ object config {
     password: String,
     host: String,
     port: Int,
-    sid: String
-  ){
-    val driver = "oracle.jdbc.driver.OracleDriver"
-    def jdbcUrl: String = s"jdbc:oracle:thin:@//${host}:${port}/${sid}"
-  }
+    sid: String,
+    driver: String,
+    jdbcUrl: String
+  )
 
   final case class PostgresConf(
     username: String,
     password: String,
     host: String,
-    port: String,
-    sid: String
-  ){
-    val driver = "org.postgresql.Driver"
-    def jdbcUrl: String = s"jdbc:postgresql://${host}:${port}/${sid}"
-  }
+    port: Int,
+    sid: String,
+    driver: String,
+    jdbcUrl: String
+  )
 
   final case class OracleTransactor[F[_]](getTransactor: Transactor[F]) extends AnyVal
   final case class PostgresTransactor[F[_]](getTransactor: Transactor[F]) extends AnyVal
@@ -94,8 +93,10 @@ object config {
     username: Last[String],
     password: Last[String],
     host: Last[String],
-    port: Last[String],
-    sid: Last[String]
+    port: Last[Int],
+    sid: Last[String],
+    driver: Last[String],
+    jdbcUrl: Last[String]
   )
   object PostgresConfig {
     implicit val pgConfigSemigroup : Semigroup[PostgresConfig] = semi.semigroup
@@ -106,40 +107,109 @@ object config {
     password: Last[String],
     host: Last[String],
     port: Last[Int],
-    sid: Last[String]
+    sid: Last[String],
+    driver: Last[String],
+    jdbcUrl: Last[String]
   )
   object OracleConfig {
     implicit val ocConfigSemigroup : Semigroup[OracleConfig] = semi.semigroup
   }
 
-  private def loadAppConfig[F[_]: Sync]: F[AppConfig] = for {
-    classLoader <- Sync[F].delay(ConfigFactory.load(getClass().getClassLoader()))
-    out <- Sync[F].delay(loadConfigOrThrow[AppConfig](classLoader, ""))
-  } yield out
-
-  private def appConf[F[_]: Sync](app: AppConfig): F[AppConf] = app match {
+  // TOOD: Validation to return exactly which values are missing
+  def appConf[F[_]: Sync](app: AppConfig): F[AppConf] = app match {
     case AppConfig(
       OracleConfig(
         Last(Some(ousername)),
         Last(Some(opassword)),
         Last(Some(ohost)),
         Last(Some(oport)),
-        Last(Some(osid))
+        Last(Some(osid)),
+        Last(Some(odriver)),
+        Last(ojdbcUrl)
       ),
       PostgresConfig(
         Last(Some(pusername)),
         Last(Some(ppassword)),
         Last(Some(phost)),
         Last(Some(pport)),
-        Last(sidOpt)
+        Last(sidOpt),
+        Last(Some(pdriver)),
+        Last(pjdbcUrl)
       )
-    ) => AppConf(
-      OracleConf(ousername, opassword, ohost, oport, osid),
-      PostgresConf(pusername, ppassword, phost, pport, sidOpt.getOrElse(""))
+    ) => 
+    val psid = sidOpt.getOrElse("")
+    AppConf(
+      OracleConf(ousername, opassword, ohost, oport, osid, odriver, 
+        ojdbcUrl.getOrElse(s"jdbc:oracle:thin:@//${ohost}:${oport}/${osid}")
+      ),
+      PostgresConf(pusername, ppassword, phost, pport, psid, pdriver,
+        pjdbcUrl.getOrElse(s"jdbc:postgresql://${phost}:${pport}/${psid}")
+      )
     ).pure[F]
     case o => Sync[F].raiseError(new Throwable(s"Missing one or more configuration options - Got $o"))
   }
 
-  def loadAppConf[F[_]: Sync]: F[AppConf] = loadAppConfig[F] >>= appConf[F]
+  def loadAppConf[F[_]: Sync]: F[AppConf] = for {
+    envAppConfig <- appConfigFromEnv[F]
+    finalConfig = defaultAppConfig.combine(envAppConfig)
+    out <- appConf[F](finalConfig)
+  } yield out
+
+  val defaultAppConfig: AppConfig = AppConfig(
+    OracleConfig(
+      Last(None),
+      Last(None),
+      Last(None),
+      Last(Some(2322)),
+      Last(None),
+      Last("oracle.jdbc.driver.OracleDriver".some),
+      Last(None)
+    ),
+    PostgresConfig(
+      Last(None), // username
+      Last(None), // password
+      Last(None), // host
+      Last(Some(5432)), // port
+      Last(None), // sid
+      Last("org.postgresql.Driver".some), // driver
+      Last(None) // jdbcUrl
+    )
+  )
+
+  def appConfigFromEnv[F[_]: Sync]: F[AppConfig] = for {
+    ousername <- lookupEnv[F]("ORACLE_USER")
+    opassword <- lookupEnv[F]("ORACLE_PASS")
+    ohost     <- lookupEnv[F]("ORACLE_HOST")
+    oport     <- lookupEnv[F]("ORACLE_PORT").flatMap(i => Sync[F].delay(i.map(_.toInt)))
+    osid      <- lookupEnv[F]("ORACLE_SID")
+    odriver   <- lookupEnv[F]("ORACLE_DRIVER")
+    ojdbcUrl  <- lookupEnv[F]("ORACLE_JDBC_URL")
+    pusername <- lookupEnv[F]("POSTGRES_USER")
+    ppassword <- lookupEnv[F]("POSTGRES_PASS")
+    phost     <- lookupEnv[F]("POSTGRES_HOST")
+    pport     <- lookupEnv[F]("POSTGRES_PORT").flatMap(i => Sync[F].delay(i.map(_.toInt)))
+    psid      <- lookupEnv[F]("POSTGRES_SID")
+    pdriver   <- lookupEnv[F]("POSTGRES_DRIVER")
+    pjdbcUrl  <- lookupEnv[F]("POSTGRES_JDBC_URL")
+  } yield AppConfig(
+    OracleConfig(
+      Last(ousername),
+      Last(opassword),
+      Last(ohost),
+      Last(oport),
+      Last(osid),
+      Last(odriver),
+      Last(ojdbcUrl)
+    ),
+    PostgresConfig(
+      Last(pusername),
+      Last(ppassword),
+      Last(phost),
+      Last(pport),
+      Last(psid),
+      Last(pdriver),
+      Last(pjdbcUrl)
+    )
+  )
 
 }

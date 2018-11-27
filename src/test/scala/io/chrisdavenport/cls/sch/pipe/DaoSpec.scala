@@ -48,8 +48,10 @@ trait DaoSpec[F[_]] extends Specification with Checker[F] with ForAllTestContain
     dbUserName,
     dbPassword,
     dbHost,
-    dbPort.toString,
-    dbName
+    dbPort,
+    dbName,
+    "org.postgresql.Driver",
+    s"jdbc:postgresql://${dbHost}:${dbPort}/${dbName}"
   )
 
   lazy val transactor = Transactor.fromDriverManager[F](

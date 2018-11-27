@@ -1,9 +1,10 @@
-sudo: false
+sudo: true
 language: scala
+services:
+  - docker
 
 scala:
   - 2.12.7
-  - 2.11.12
 
 before_cache:
   - find $HOME/.sbt -name "*.lock" -type f -delete
