@@ -50,7 +50,7 @@ object application {
   def stream[F[_]: Logger: ConcurrentEffect: Timer: ContextShift](conf: config.AppConf): Stream[F, Unit] = {
     ( 
       singleCycle(conf) ++
-      (Stream.awakeDelay[F](2.minutes) >> singleCycle(conf))
+      (Stream.awakeDelay[F](24.hours) >> singleCycle(conf))
     )
       .handleErrorWith(e => 
         Stream.eval(Logger[F].error(e)("Unexpected Error In Stream Cycle")) ++

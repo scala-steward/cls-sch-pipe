@@ -189,34 +189,60 @@ object config {
   def appConf[F[_]: Sync](app: AppConfig): F[AppConf] = app match {
     case AppConfig(
       OracleConfig(
-        Last(Some(ousername)),
-        Last(Some(opassword)),
-        Last(Some(ohost)),
-        Last(Some(oport)),
-        Last(Some(osid)),
-        Last(Some(odriver)),
-        Last(ojdbcUrl)
+        Last(ousernameOpt),
+        Last(opasswordOpt),
+        Last(ohostOpt),
+        Last(oportOpt),
+        Last(osidOpt),
+        Last(odriverOpt),
+        Last(ojdbcUrlOpt)
       ),
       PostgresConfig(
-        Last(Some(pusername)),
-        Last(Some(ppassword)),
-        Last(Some(phost)),
-        Last(Some(pport)),
-        Last(sidOpt),
-        Last(Some(pdriver)),
-        Last(pjdbcUrl)
+        Last(pusernameOpt),
+        Last(ppasswordOpt),
+        Last(phostOpt),
+        Last(pportOpt),
+        Last(psidOpt),
+        Last(pdriverOpt),
+        Last(pjdbcUrlOpt)
       )
     ) => 
-    val psid = sidOpt.getOrElse("")
-    AppConf(
-      OracleConf(ousername, opassword, ohost, oport, osid, odriver, 
-        ojdbcUrl.getOrElse(s"jdbc:oracle:thin:@//${ohost}:${oport}/${osid}")
+    val psid = psidOpt.getOrElse("")
+    (
+      ousernameOpt.toValidNel("Oracle Username")
+    , opasswordOpt.toValidNel("Oracle Password")
+    , ohostOpt.toValidNel("Oracle Host")
+    , oportOpt.toValidNel("Oracle Port")
+    , osidOpt.toValidNel("Oracle Sid")
+    , odriverOpt.toValidNel("Oracle Driver")
+    , pusernameOpt.toValidNel("Postgres Username")
+    , ppasswordOpt.toValidNel("Postgres Password")
+    , phostOpt.toValidNel("Postgres Host")
+    , pportOpt.toValidNel("Postgres Port")
+    , pdriverOpt.toValidNel("Postgres Driver")
+    ).mapN{
+      case (ousername, opassword, ohost, oport, osid, odriver
+      , pusername, ppassword, phost, pport, pdriver) => 
+      AppConf(
+        OracleConf(ousername, opassword, ohost, oport, osid, odriver, 
+        ojdbcUrlOpt.getOrElse(s"jdbc:oracle:thin:@//${ohost}:${oport}/${osid}")
       ),
       PostgresConf(pusername, ppassword, phost, pport, psid, pdriver,
-        pjdbcUrl.getOrElse(s"jdbc:postgresql://${phost}:${pport}/${psid}")
+        pjdbcUrlOpt.getOrElse(s"jdbc:postgresql://${phost}:${pport}/${psid}")
       )
-    ).pure[F]
-    case o => Sync[F].raiseError(new Throwable(s"Missing one or more configuration options - Got $o"))
+      )
+    }.fold(
+      {s => 
+        val missingConfigs = s.intercalate(", ")
+        Sync[F].raiseError(
+          new Throwable(
+            show"""Missing one or more configuration options - Missing $missingConfigs
+            |Please Check Configuration Options in the documentation or use --help""".stripMargin
+          ) with scala.util.control.NoStackTrace
+        )
+      },
+      _.pure[F]
+    )
   }
 
   
