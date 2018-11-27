@@ -55,8 +55,13 @@ postgres:
 
 Command Line Configuration should hopefully be straight forward.
 
-```txt
-Usage: cls-sch-pipe [--oracle-user <string>] [--oracle-password <string>] [--oracle-host <string>] [--oracle-port <integer>] [--oracle-sid <string>] [--oracle-driver <string>] [--oracle-jdbc-url <string>] [--postgres-user <string>] [--postgres-password <string>] [--postgres-host <string>] [--postgres-port <integer>] [--postgres-sid <string>] [--postgres-driver <string>] [--postgres-jdbc-url <string>]
+```help
+Usage: cls-sch-pipe [--oracle-user <string>] [--oracle-password <string>]
+[--oracle-host <string>] [--oracle-port <integer>] [--oracle-sid <string>]
+[--oracle-driver <string>] [--oracle-jdbc-url <string>] [--postgres-user <string>]
+[--postgres-password <string>] [--postgres-host <string>] [--postgres-port <integer>]
+[--postgres-sid <string>] [--postgres-driver <string>] [--postgres-jdbc-url <string>]
+[--file <path>]
 
 Run Database pipe.
 
@@ -91,4 +96,6 @@ Options and flags:
         The postgres driver to user, only necessary using something custom
     --postgres-jdbc-url <string>
         The postgres jdbc url, only necessary to do something custom
+    --file <path>, -f <path>
+        Path to Additional Configuration File
 ```

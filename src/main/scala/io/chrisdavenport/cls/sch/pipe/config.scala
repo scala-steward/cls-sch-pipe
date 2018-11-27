@@ -107,6 +107,16 @@ object config {
       .load()
       .migrate
   }
+  final case class AppOptions(
+    config: AppConfig,
+    additionalConfigFile: Option[Path]
+  )
+  object AppOptions {
+    val optsAppOptions = {
+      val optionalConfigFile = Opts.option[Path]("file", short = "f", help = "Path to Additional Configuration File").orNone
+      (AppConfig.optsAppConfig, optionalConfigFile).mapN(AppOptions.apply)
+    }
+  }
 
   final case class AppConfig(
     oracle: OracleConfig,
@@ -215,7 +225,8 @@ object config {
     cliConfig <- fromArgs[F](args)
     envAppConfig <- appConfigFromEnv[F]
     defaultFile <- getFromDefaultFile[F]
-    finalConfig = defaultAppConfig.combine(envAppConfig).combine(defaultFile).combine(cliConfig)
+    additionalFile <- cliConfig.additionalConfigFile.traverse(getFromFile[F]).map(_.combineAll)
+    finalConfig = defaultAppConfig.combine(envAppConfig).combine(defaultFile).combine(additionalFile).combine(cliConfig.config)
     out <- appConf[F](finalConfig)
   } yield out
 
@@ -297,14 +308,15 @@ object config {
   def getFromDefaultFile[F[_]: Sync: DualContext: ContextShift: Logger]: F[AppConfig] = 
     getFromFile[F](FileSystems.getDefault().getPath("/usr", "local", "etc", "cls-sch-pipe.yml"))
 
-  def fromArgs[F[_]: Sync](args: List[String]): F[AppConfig] = {
+  def fromArgs[F[_]: Sync](args: List[String]): F[AppOptions] = {
     Command(
       name = "cls-sch-pipe",
       header = "Run Database pipe."
-    ) {AppConfig.optsAppConfig}
+    )(AppOptions.optsAppOptions)
     .parse(args)
     .fold(
-      h => putStrLn[F](h.toString) >> Sync[F].raiseError[AppConfig](new Throwable("Command Line Options Invalid") with scala.util.control.NoStackTrace),
+      h => putStrLn[F](h.toString) >> 
+        Sync[F].raiseError[AppOptions](new Throwable("Command Line Options Invalid") with scala.util.control.NoStackTrace),
       _.pure[F]
     )
   }
