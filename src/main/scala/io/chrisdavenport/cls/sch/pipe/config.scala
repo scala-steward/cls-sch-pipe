@@ -252,7 +252,7 @@ object config {
     envAppConfig <- appConfigFromEnv[F]
     defaultFile <- getFromDefaultFile[F]
     additionalFile <- cliConfig.additionalConfigFile.traverse(getFromFile[F]).map(_.combineAll)
-    finalConfig = defaultAppConfig.combine(envAppConfig).combine(defaultFile).combine(additionalFile).combine(cliConfig.config)
+    finalConfig = defaultAppConfig |+| envAppConfig |+| defaultFile |+| additionalFile |+| cliConfig.config
     out <- appConf[F](finalConfig)
   } yield out
 
