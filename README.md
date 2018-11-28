@@ -2,7 +2,7 @@
 
 Create `/lib` folder and place `ojdbcX.jar` there to make sure the oracle library is present.
 
-Once complete the application can be deployed to docker via  `sbt universal/packageBin` in which case you can find the
+Once complete the application can be deployed as a binary via  `sbt universal/packageBin` in which case you can find the
 zip file with the distribution in `/target/universal/cls-sch-pipe-VERSION.zip`. Additionally if you would like to
 build with docker you can instead publish locally with `sbt docker:publishLocal`.
 
@@ -10,7 +10,7 @@ build with docker you can instead publish locally with `sbt docker:publishLocal`
 
 The set of configs is a priority ordering.
 
-Defaults <  Environmental Variables < Default Config File < Command Line Arguments
+Defaults <  Environmental Variables < Default Config File < Config File Set Via Command Line < Command Line Arguments
 
 ### Environmental Configuration
 
