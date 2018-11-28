@@ -3,7 +3,7 @@
 Create `/lib` folder and place `ojdbcX.jar` there to make sure the oracle library is present.
 
 Once complete the application can be deployed as a binary via  `sbt universal:packageBin` in which case you can find the
-zip file with the distribution in `/target/universal/cls-sch-pipe-VERSION.zip`. Additionally if you would like to
+zip file with the distribution in `./target/universal/cls-sch-pipe-VERSION.zip`. Additionally if you would like to
 build with docker you can instead publish locally with `sbt docker:publishLocal`.
 
 ## Configuration
