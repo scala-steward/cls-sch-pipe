@@ -45,7 +45,7 @@ oracle:
   password: "passwrod"
 postgres:
   host: "localhost"
-  post: 5432
+  port: 5432
   sid: "db"
   username: "user"
   password: "password"
