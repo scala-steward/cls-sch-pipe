@@ -13,7 +13,7 @@ val fs2V = "1.0.2"
 val http4sV = "0.20.0-M3"
 val circeV = "0.10.1"
 val doobieV = "0.6.0"
-val pureConfigV = "0.10.0"
+val pureConfigV = "0.10.1"
 val refinedV = "0.9.3"
 
 val log4catsV = "0.2.0"
