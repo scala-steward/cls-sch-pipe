@@ -22,7 +22,7 @@ val catsTimeV = "0.2.0"
 val fuuidV = "0.2.0-M4"
 val lineBackerV = "0.2.0"
 
-val specs2V = "4.3.6"
+val specs2V = "4.4.0"
 val testcontainersSpecsV = "0.1.0"
 val disciplineV = "0.10.0"
 val scShapelessV = "1.2.0"
