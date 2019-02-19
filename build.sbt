@@ -19,7 +19,7 @@ val refinedV = "0.9.4"
 val log4catsV = "0.3.0"
 val catsParV = "0.2.1"
 val catsTimeV = "0.2.0"
-val fuuidV = "0.2.0-M4"
+val fuuidV = "0.2.0-M5"
 val lineBackerV = "0.2.0"
 
 val specs2V = "4.4.1"
