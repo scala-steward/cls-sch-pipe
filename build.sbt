@@ -16,7 +16,7 @@ val doobieV = "0.6.0"
 val pureConfigV = "0.10.2"
 val refinedV = "0.9.4"
 
-val log4catsV = "0.2.0"
+val log4catsV = "0.3.0"
 val catsParV = "0.2.1"
 val catsTimeV = "0.2.0"
 val fuuidV = "0.2.0-M4"
