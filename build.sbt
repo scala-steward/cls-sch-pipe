@@ -5,7 +5,7 @@ lazy val core = project.in(file("."))
     ).enablePlugins(JavaAppPackaging, DockerPlugin, AutomateHeaderPlugin)
 
 val catsV = "1.6.0"
-val kittensV = "1.2.0"
+val kittensV = "1.2.1"
 val catsEffectV = "1.2.0"
 val mouseV = "0.20"
 val shapelessV = "2.3.3"
