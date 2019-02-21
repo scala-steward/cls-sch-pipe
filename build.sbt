@@ -96,7 +96,7 @@ lazy val commonSettings = Seq(
     "io.chrisdavenport"           %% "cats-time"                  % catsTimeV,
 
     "io.chrisdavenport"           %% "system-effect"              % "0.1.0",
-    "io.chrisdavenport"           %% "monoids"                    % "0.0.2",
+    "io.chrisdavenport"           %% "monoids"                    % "0.1.0",
 
     "org.flywaydb"                % "flyway-core"                 % "5.2.4",
 
