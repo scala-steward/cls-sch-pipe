@@ -27,7 +27,7 @@ val testcontainersSpecsV = "0.1.0"
 val disciplineV = "0.11.0"
 val scShapelessV = "1.2.1"
 
-val kindProjectorV = "0.9.9"
+val kindProjectorV = "0.9.10"
 val betterMonadicForV = "0.3.0-M4"
 
 
