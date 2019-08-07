@@ -6,15 +6,15 @@ lazy val core = project.in(file("."))
 
 val catsV = "1.6.1"
 val kittensV = "1.2.1"
-val catsEffectV = "1.3.1"
-val mouseV = "0.22"
+val catsEffectV = "1.4.0"
+val mouseV = "0.21"
 val shapelessV = "2.3.3"
 val fs2V = "1.0.5"
-val http4sV = "0.20.6"
+val http4sV = "0.20.8"
 val circeV = "0.11.1"
 val doobieV = "0.7.0"
 val pureConfigV = "0.11.1"
-val refinedV = "0.9.8"
+val refinedV = "0.9.9"
 
 val log4catsV = "0.3.0"
 val catsParV = "0.2.1"
@@ -22,13 +22,13 @@ val catsTimeV = "0.2.0"
 val fuuidV = "0.2.0"
 val lineBackerV = "0.2.1"
 
-val specs2V = "4.6.0"
+val specs2V = "4.7.0"
 val testcontainersSpecsV = "0.1.0"
 val disciplineV = "0.11.1"
 val scShapelessV = "1.2.3"
 
 val kindProjectorV = "0.9.10"
-val betterMonadicForV = "0.3.0"
+val betterMonadicForV = "0.3.1"
 
 
 lazy val contributors = Seq(
