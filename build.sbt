@@ -27,7 +27,7 @@ val testcontainersSpecsV = "0.1.0"
 val disciplineV = "0.11.1"
 val scShapelessV = "1.2.3"
 
-val kindProjectorV = "0.9.10"
+val kindProjectorV = "0.10.0"
 val betterMonadicForV = "0.3.1"
 
 
@@ -52,7 +52,7 @@ lazy val commonSettings = Seq(
   startYear := Some(2018),
   licenses += ("AGPL-3.0", url("https://www.gnu.org/licenses/agpl.html")),
 
-  addCompilerPlugin("org.spire-math" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
+  addCompilerPlugin("org.typelevel" % "kind-projector" % kindProjectorV cross CrossVersion.binary),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % betterMonadicForV),
   libraryDependencies ++= Seq(
     "org.typelevel"               %% "cats-core"                  % catsV,
