@@ -5,15 +5,15 @@ lazy val core = project.in(file("."))
     ).enablePlugins(JavaAppPackaging, DockerPlugin, AutomateHeaderPlugin)
 
 val catsV = "1.6.1"
-val kittensV = "1.2.1"
-val catsEffectV = "2.0.0"
+val kittensV = "2.0.0"
+val catsEffectV = "1.4.0"
 val mouseV = "0.21"
 val shapelessV = "2.3.3"
 val fs2V = "1.0.5"
 val http4sV = "0.20.10"
 val circeV = "0.11.1"
 val doobieV = "0.7.0"
-val pureConfigV = "0.11.1"
+val pureConfigV = "0.12.0"
 val refinedV = "0.9.9"
 
 val log4catsV = "0.3.0"
@@ -98,7 +98,7 @@ lazy val commonSettings = Seq(
     "io.chrisdavenport"           %% "system-effect"              % "0.1.0",
     "io.chrisdavenport"           %% "monoids"                    % "0.1.0",
 
-    "org.flywaydb"                % "flyway-core"                 % "6.0.2",
+    "org.flywaydb"                % "flyway-core"                 % "6.0.3",
 
     "io.chrisdavenport"           %% "linebacker"                 % lineBackerV,
 
