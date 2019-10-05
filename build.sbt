@@ -11,9 +11,9 @@ val mouseV = "0.21"
 val shapelessV = "2.3.3"
 val fs2V = "1.0.5"
 val http4sV = "0.20.11"
-val circeV = "0.12.1"
-val doobieV = "0.7.0"
-val pureConfigV = "0.12.0"
+val circeV = "0.11.1"
+val doobieV = "0.7.1"
+val pureConfigV = "0.12.1"
 val refinedV = "0.9.10"
 
 val log4catsV = "0.3.0"
@@ -98,7 +98,7 @@ lazy val commonSettings = Seq(
     "io.chrisdavenport"           %% "system-effect"              % "0.1.0",
     "io.chrisdavenport"           %% "monoids"                    % "0.1.0",
 
-    "org.flywaydb"                % "flyway-core"                 % "6.0.3",
+    "org.flywaydb"                % "flyway-core"                 % "6.0.4",
 
     "io.chrisdavenport"           %% "linebacker"                 % lineBackerV,
 
