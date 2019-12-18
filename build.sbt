@@ -4,7 +4,7 @@ lazy val core = project.in(file("."))
       name := "cls-sch-pipe"
     ).enablePlugins(JavaAppPackaging, DockerPlugin, AutomateHeaderPlugin)
 
-val catsV = "1.6.1"
+val catsV = "2.1.0"
 val kittensV = "2.0.0"
 val catsEffectV = "1.4.0"
 val mouseV = "0.21"
