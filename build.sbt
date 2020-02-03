@@ -25,7 +25,7 @@ val lineBackerV = "0.2.1"
 val specs2V = "4.7.1"
 val testcontainersSpecsV = "0.1.0"
 val disciplineV = "0.11.1"
-val scShapelessV = "1.2.3"
+val scShapelessV = "1.2.4"
 
 val kindProjectorV = "0.10.3"
 val betterMonadicForV = "0.3.1"
