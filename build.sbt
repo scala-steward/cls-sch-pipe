@@ -78,7 +78,7 @@ lazy val commonSettings = Seq(
     "io.circe"                    %% "circe-parser"               % circeV,
     "io.circe"                    %% "circe-yaml"                 % "0.10.0",
 
-    "com.monovore"                %% "decline"                    % "0.6.2",
+    "com.monovore"                %% "decline"                    % "1.2.0",
 
     "org.tpolecat"                %% "doobie-core"                % doobieV,
     "org.tpolecat"                %% "doobie-h2"                  % doobieV,
